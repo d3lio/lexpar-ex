@@ -1,18 +1,17 @@
 defmodule Lexpar do
-  @moduledoc """
-  Documentation for Lexpar.
-  """
+  use Lexpar.Parser, entry: :expr
 
-  @doc """
-  Hello world.
+  defnonterm expr do
+    ?(, e, ?) when is_expr(e) -> e
+    e when is_number(e) -> e
+    e, k when is_number(e) and is_atom(k) and true -> e
+    e, _ -> e
+    expr(e) -> e
+    @eps -> nil
+  end
 
-  ## Examples
-
-      iex> Lexpar.hello
-      :world
-
-  """
-  def hello do
-    :world
+  # fn f a b c = ...
+  defnonterm function do
+    "fn", name, a.*, "=", expr.* when is_ident(a) -> a
   end
 end
