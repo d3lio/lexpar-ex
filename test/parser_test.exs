@@ -1,31 +1,30 @@
 defmodule ParserTest do
   use ExUnit.Case
+  alias Lexpar.Parser
   doctest Lexpar.Parser
 
-  describe "Simple expression parser with parens and numbers" do
-    defmodule Parser do
-      use Lexpar.Parser, entry: expr
-
-      defnonterm expr do
-        ?(, e, ?) when is_expr(e) -> e
-        e when is_number(e) -> e
-      end
+  describe "Lexpar.Parse.pair_with_guard" do
+    test "returns var when there is no guards provided" do
+      var = {:e, [], nil}
+      assert Parser.pair_with_guard(var, []) === var
     end
 
-    test "parses single number" do
-      assert Parser.parse([1337]) === {:ok, 1337, []}
+    test "returns var when there is no guards to pair with" do
+      var = {:n, [], nil}
+      assert Parser.pair_with_guard(var, [{:is_expr, [], [{:e, [], nil}]}]) === var
     end
 
-    test "parses number with one set of parens" do
-      assert Parser.parse([?(, 1337, ?)]) === {:ok, 1337, []}
+    test "pairs var with single guard" do
+      var = {:e, [], nil}
+      assert Parser.pair_with_guard(var, [{:is_expr, [], [var]}]) === {:guarded, var, :expr}
     end
 
-    test "parses number with two sets of parens" do
-      assert Parser.parse([?(, ?(, 1337, ?), ?)]) === {:ok, 1337, []}
-    end
-
-    test "eof" do
-      assert Parser.parse([]) === :eof
+    test "pairs var with a guard from multiple guards" do
+      var = {:n, [], nil}
+      assert Parser.pair_with_guard(var, [
+        {:is_number, [], [var]},
+        {:is_expr, [], [{:e, [], nil}]}
+      ]) === {:guarded, var, :number}
     end
   end
 end

@@ -19,7 +19,7 @@ defmodule ParserUnexpectedTest do
     end
 
     test "unexpected eof" do
-      assert Parser.parse([1, 2]) === {:unexpected, :eof, -1}
+      assert Parser.parse([1, 2]) === {:unexpected_eof, {:entry, 0, 2}}
     end
   end
 end
